@@ -1,1 +1,1 @@
-![Alt text](final.jpg?raw=true "Result")
+![Result](./final.jpg)
