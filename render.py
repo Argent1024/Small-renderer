@@ -8,9 +8,10 @@ class Ray:
 
 class Plane:    # A hard code plane, center can only be (x,0,0), (0,y,0), (0,0,z)
     def __init__(self, c, mat=DefaultMat, length=50):  # which axises are not zero
-        self.length, self.c, self.n, self.mat = length, c, normalize(-c), mat
+        self.length, self.c, self.mat = length, c, mat
         self.index = np.nonzero(c)[0][0]
         self.zero_axis = np.where(c == 0)[0]
+        self.n = normalize(-c)
 
     def intersect(self, ray):  # intersect of ray and plane, return intersect point
         if ray.dir[self.index] != 0:
@@ -50,7 +51,7 @@ def find_hit(scene, ray):
             isect = t_isect
     return isect
 
-def light(p, n, material, scene, emission, l_sample=4):     # light source is a plane locates on celling
+def light(p, n, material, scene, emission, l_sample=1):     # light source is a plane locates on celling
     if emission and np.abs(p[0] - 50) <= 0.01 and all(np.abs(p[[1, 2]]) <= np.array([20, 20])):
         return np.array([1.5, 1.5, 1.5])  # emit light if p is near the center of celling
     illumination = np.zeros(3)
@@ -58,7 +59,7 @@ def light(p, n, material, scene, emission, l_sample=4):     # light source is a 
     for i in range(l_sample):
         light_point = np.array([50., 40 * np.random.random() - 20, 40 * np.random.random() - 20])
         dir, ray_len = normalize(light_point - p), np.linalg.norm(light_point - p)
-        if not find_hit(scene, Ray(p + 0.1 * dir, dir, ray_len - 0.5)):
+        if not find_hit(scene, Ray(p + 0.1 * dir, dir, tmax=ray_len - 0.5)):
             illumination += np.abs(np.dot(dir, n)) * np.array([1., 1., 1.])
     return illumination * material.brdf() / l_sample
 
@@ -79,7 +80,7 @@ def trace_ray(ray, scene, max_iter):
     return color
 
 if __name__ == "__main__":
-    img, camera_p, sample_num, max_iter = Image.new('RGB', (300, 300)),  np.array([0., 0., -203.]), 4, 4
+    img, camera_p, sample_num, max_iter = Image.new('RGB', (300, 300)),  np.array([0., 0., -203.]), 64, 10
     my_scene = [Sphere(np.array([-30., -20., 20.]), Mirror, 20), Sphere(np.array([-40., -30., -20.]), YellowGlass, 10),
                 Sphere(np.array([-40., -10., -30.]), RedGlass, 10), Sphere(np.array([-30., 20., -15.]), WhiteGlass, 20),
                 Plane(np.array([50, 0, 0])), Plane(np.array([-50, 0, 0])), Plane(np.array([0, 0, 50])),
