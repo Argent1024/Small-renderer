@@ -6,9 +6,10 @@ def glass_sample(in_dir, normal, eta=0.666):
     cos = np.dot(in_dir, normal)
     if cos < 0:         # Ray from inside
         eta, cos, normal = 1 / eta, np.abs(cos), -normal
-    p = np.power(eta - 1, 2) / np.power(eta + 1, 2)
+    r0 = np.power(eta - 1, 2) / np.power(eta + 1, 2)
+    p = r0 + (1 - r0) * np.power(1 - cos, 5)   # Schlick's approximation
     if np.random.random() < p:
-        return reflect(in_dir, normal), 1
+        return (reflect(in_dir, normal), 1)
     else:
         t = 1 - np.power(eta, 2) * (1 - np.power(cos, 2))
         return (-eta * in_dir + (eta * cos - np.sqrt(t)) * normal, 1) if t >= 0 else (reflect(in_dir, normal), 1)
@@ -84,13 +85,14 @@ def trace_ray(ray, scene, max_iter):
         ray = Ray(isect["p"] + 0.1 * new_dir, new_dir, tmin=0.11)
     return color
 if __name__ == "__main__":
-    img, camera_p, sample_num, max_iter = Image.new('RGB', (480, 480)),  np.array([0., 0., -203.]), 32, 10
+    img, camera_p, sample_num, max_iter = Image.new('RGB', (300, 300)),  np.array([0., 0., -203.]), 3, 4
     my_scene = [Sphere(np.array([-30.,-20.,20.]), {"type": "Mirror","brdf": np.array([1., 1., 1.]),"isdelta": True}, 20), Sphere(np.array([-30., 20., -15.]), {"type": "Glass","brdf": np.array([1., 1., 1.]),"isdelta": True}, 20),
                 Sphere(np.array([-40., -10., -30.]), {"type": "Glass", "brdf": np.array([1., 0., 0.]), "isdelta": True}, 10),
                 Sphere(np.array([-40., -30., -20.]), {"type": "Glass", "brdf": np.array([1., 1., 0.]), "isdelta": True}, 10),
                 Plane(50, np.array([50, 0, 0]), np.array([-1., 0., 0.]), [1, 2]), Plane(50, np.array([-50, 0, 0]), np.array([1., 0., 0.]), [1, 2]), Plane(50, np.array([0, 0, 50]), np.array([0., 0., -1.]), [0, 1]),
                 Plane(50, np.array([0, 50, 0]), np.array([0., -1., 0.]), [0, 2], Red), Plane(50, np.array([0, -50, 0]), np.array([0., 1., 0.]), [0, 2], Blue)]
     for h in range(img.height):
+        print(h)
         for w in range(img.width):
             color = np.zeros(3)
             for sample in range(sample_num):
