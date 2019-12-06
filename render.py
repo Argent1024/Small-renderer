@@ -1,4 +1,4 @@
-# The complete code is also available at TODO Github
+# The complete code is also available at https://github.com/Argent1024/Small-renderer/blob/master/render.py
 # This is the main part of a simplified path-tracing renderer. Including intersection of shapes, path tracing alg.
 # There is another file that contains the common materials, utilizes and sampler functions for MC Integration.
 # Change sample number and image size to get the result quickly (since this program uses only one thread).
