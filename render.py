@@ -1,3 +1,13 @@
+# The complete code is also available at TODO Github
+# This is the main part of a simplified path-tracing renderer. Including intersection of shapes, path tracing alg.
+# There is another file that contains the common materials, utilizes and sampler functions for MC Integration.
+# Change sample number and image size to get the result quickly (since this program uses only one thread).
+#
+# I choose this simply because I like computer graphics and films and want to do related works in the future.
+# And since I'm applying for this CS/DA program, which I noticed that will be focus more on CG area, the first
+# thing that came into my mind is to write a path tracing algorithm. I wish I can show that I'm more than those
+# poor grades and courses on my transcript and I really know something about CG.
+
 import numpy as np
 from PIL import Image
 from material import normalize, RedGlass, RedWall, BlueWall, YellowGlass, DefaultMat, WhiteGlass, Mirror
@@ -51,9 +61,9 @@ def find_hit(scene, ray):
             isect = t_isect
     return isect
 
-def light(p, n, material, scene, emission, l_sample=1):     # light source is a plane locates on celling
+def light(p, n, material, scene, emission, l_sample=4):     # light source is a plane locates on celling
     if emission and np.abs(p[0] - 50) <= 0.01 and all(np.abs(p[[1, 2]]) <= np.array([20, 20])):
-        return np.array([1.5, 1.5, 1.5])  # emit light if p is near the center of celling
+        return np.array([1., 1., 1.])  # emit light if p actually on the light source
     illumination = np.zeros(3)
     # random sample and cast shadow ray
     for i in range(l_sample):
@@ -66,8 +76,8 @@ def light(p, n, material, scene, emission, l_sample=1):     # light source is a 
 def trace_ray(ray, scene, max_iter):
     color, weight, emission = np.array([0., 0., 0.]), np.array([1., 1., 1.]), True  # init parameters
     for iter_num in range(max_iter):
-        isect = find_hit(scene, ray)                     # find intersection point
-        if np.linalg.norm(weight) <= 0.01 or not isect:  # Break if weight too small or hit nothing
+        isect = find_hit(scene, ray)   # find the closet intersection point
+        if not isect:                  # Break if hit nothing
             break
         mat = isect["material"]
         new_dir, p = mat.sample(-ray.dir, isect["n"])  # Generate new ray and store it's probability
@@ -80,14 +90,13 @@ def trace_ray(ray, scene, max_iter):
     return color
 
 if __name__ == "__main__":
-    img, camera_p, sample_num, max_iter = Image.new('RGB', (300, 300)),  np.array([0., 0., -203.]), 64, 10
+    img, camera_p, sample_num, max_iter = Image.new('RGB', (500, 500)),  np.array([0., 0., -203.]), 128, 8
     my_scene = [Sphere(np.array([-30., -20., 20.]), Mirror, 20), Sphere(np.array([-40., -30., -20.]), YellowGlass, 10),
-                Sphere(np.array([-40., -10., -30.]), RedGlass, 10), Sphere(np.array([-30., 20., -15.]), WhiteGlass, 20),
+                Sphere(np.array([-40., -10., -30.]), RedGlass, 10), Sphere(np.array([-30., 20., -10.]), WhiteGlass, 20),
                 Plane(np.array([50, 0, 0])), Plane(np.array([-50, 0, 0])), Plane(np.array([0, 0, 50])),
                 Plane(np.array([0, 50, 0]), RedWall), Plane(np.array([0, -50, 0]), BlueWall)]
     # ray trace every pixel
     for h in range(img.height):
-        print(h)
         for w in range(img.width):
             color = np.zeros(3)
             for sample in range(sample_num):

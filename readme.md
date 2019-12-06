@@ -1,1 +1,1 @@
-![Result](./final.jpg)
+![Result](./result_128_8.png)
