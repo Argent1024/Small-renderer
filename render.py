@@ -3,10 +3,10 @@
 # There is another file that contains the common materials, utilizes and sampler functions for MC Integration.
 # Change sample number and image size to get the result quickly (since this program uses only one thread).
 #
-# I choose this simply because I like computer graphics and films and want to do related works in the future.
-# And since I'm applying for this CS/DA program, which I noticed that will be focus more on CG area, the first
-# thing that came into my mind is to write a path tracing algorithm. I wish I can show that I'm more than those
-# poor grades and courses on my transcript and I really know something about CG.
+# I chose this simply because I like computer graphics and want to do related works in the future.
+# And since I'm applying for this CS/DA program, which focuses more on the CG area, the first thing that
+# came into my mind was to write the path-tracing algorithm. I hope writing something related to CG can
+# show my knowledge and efforts in this area.
 
 import numpy as np
 from PIL import Image
@@ -23,7 +23,7 @@ class Plane:    # A hard code plane, center can only be (x,0,0), (0,y,0), (0,0,z
         self.zero_axis = np.where(c == 0)[0]
         self.n = normalize(-c)
 
-    def intersect(self, ray):  # intersect of ray and plane, return intersect point
+    def intersect(self, ray):  # intersect of ray and plane, return intersection point
         if ray.dir[self.index] != 0:
             length = (self.c[self.index] - ray.p[self.index]) / ray.dir[self.index]
             p = ray.p + length * ray.dir
@@ -37,7 +37,7 @@ class Sphere:
     def __init__(self, c, material, radius):
         self.center, self.r, self.material = c, radius, material
 
-    def intersect(self, ray):    # intersect of ray and sphere, return intersect point
+    def intersect(self, ray):    # intersect of ray and sphere, return intersection point
         p2c = self.center - ray.p
         length = np.dot(p2c, ray.dir)
         distance = np.sqrt(np.abs(np.dot(p2c, p2c) - np.power(length, 2)))
@@ -63,13 +63,13 @@ def find_hit(scene, ray):
 
 def light(p, n, material, scene, emission, l_sample=4):     # light source is a plane locates on celling
     if emission and np.abs(p[0] - 50) <= 0.01 and all(np.abs(p[[1, 2]]) <= np.array([20, 20])):
-        return np.array([1., 1., 1.])  # emit light if p actually on the light source
+        return np.array([1., 1., 1.])  # emit light if p actually locates on the light source
     illumination = np.zeros(3)
     # random sample and cast shadow ray
     for i in range(l_sample):
         light_point = np.array([50., 40 * np.random.random() - 20, 40 * np.random.random() - 20])
         dir, ray_len = normalize(light_point - p), np.linalg.norm(light_point - p)
-        if not find_hit(scene, Ray(p + 0.1 * dir, dir, tmax=ray_len - 0.5)):
+        if not find_hit(scene, Ray(p + 0.1 * dir, dir, tmax=ray_len - 0.5)):   # See if shadow ray hit anything between
             illumination += np.abs(np.dot(dir, n)) * np.array([1., 1., 1.])
     return illumination * material.brdf() / l_sample
 
@@ -83,8 +83,8 @@ def trace_ray(ray, scene, max_iter):
         new_dir, p = mat.sample(-ray.dir, isect["n"])  # Generate new ray and store it's probability
         if not mat.is_delta():
             color += weight * light(isect["p"], isect["n"], isect["material"], scene, emission)   # Calculate light
-            weight *= np.abs(np.dot(new_dir, isect["n"]))      # update the cos term if material's brdf is not delta
-        weight *= mat.brdf() / p                               # update the probability term
+            weight *= np.abs(np.dot(new_dir, isect["n"]))      # add cos term if material's brdf is not delta function
+        weight *= mat.brdf() / p                               # add the probability term
         emission = mat.is_delta()                              # whether direct light should be include
         ray = Ray(isect["p"] + 0.1*new_dir, new_dir, tmin=0.11)  # Move the origin a little bit to avoid rounding error
     return color
