@@ -1,13 +1,3 @@
-# The complete code is also available at https://github.com/Argent1024/Small-renderer/blob/master/render.py
-# This is the main part of a simplified path-tracing renderer. Including intersection of shapes, path tracing alg.
-# There is another file that contains the common materials, utilizes and sampler functions for MC Integration.
-# Change sample number and image size to get the result quickly (since this program uses only one thread).
-#
-# I chose this simply because I like computer graphics and want to do related works in the future.
-# And since I'm applying for this CS/DA program, which focuses more on the CG area, the first thing that
-# came into my mind was to write the path-tracing algorithm. I hope writing something related to CG can
-# show my knowledge and efforts in this area.
-
 import numpy as np
 from PIL import Image
 from material import normalize, RedGlass, RedWall, BlueWall, YellowGlass, DefaultMat, WhiteGlass, Mirror
